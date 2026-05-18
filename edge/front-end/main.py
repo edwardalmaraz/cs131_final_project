@@ -69,6 +69,11 @@ button_rect = pygame.Rect(window_width - MARGIN - 100, MARGIN, 100, 40)
 button_text = button_font.render("PAUSE", True, BLACK)
 is_paused = True
 
+#text fonts
+top_line_font = pygame.font.SysFont("Arial", 24)
+middle_line_font = pygame.font.SysFont("Arial", 36) 
+bottom_line_font = pygame.font.SysFont("Arial", 24)
+
 #---------------------------------------------
 #                   RUN
 
@@ -110,9 +115,22 @@ while run:
   window.blit(right_label, (right_rect.x + LABEL_PADDING, right_rect.y + LABEL_PADDING))
   window.blit(bottom_label, (bottom_rect.x + LABEL_PADDING, bottom_rect.y + LABEL_PADDING))
 
+  # display lyrics
+  text_surface1 = top_line_font.render("Hello, Pygame!", True, WHITE)
+  text_surface2 = middle_line_font.render("Hello, Pygame!", True, WHITE)
+  text_surface3 = bottom_line_font.render("Hello, Pygame!", True, WHITE)
+  text_rect1 = text_surface1.get_rect(center = bottom_rect.top)
+  text_rect2 = text_surface2.get_rect(center = bottom_rect.center)
+  text_rect3 = text_surface3.get_rect(center = bottom_rect.left)
+  window.blit(text_surface, text_rect1)
+  window.blit(text_surface, text_rect2)
+  window.blit(text_surface, text_rect3)
+  
+
   # draw play/pause button
   pygame.draw.rect(window, WHITE, button_rect)
   window.blit(button_text, (button_rect.x + 15, button_rect.y + 10))
+
 
   # update to new frame
   pygame.display.flip()
