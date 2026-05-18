@@ -14,6 +14,13 @@ window = pygame.display.set_mode((1000,700))
 pygame.display.set_caption("Kareoke + Dance")
 
 #---------------------------------------------
+#                  INIT SONG
+SONG_DIR = "songs"
+pygame.mixer.music.load(f"{SONG_DIR}/cupid.mp3")
+pygame.mixer.music.play()
+
+
+#---------------------------------------------
 #                  LAYOUT
 
 # constants
@@ -54,6 +61,12 @@ left_camera_rect = pygame.Rect(
   left_rect.height - (3 * LABEL_PADDING) - left_label.get_height(),
 )
 
+# create play/pause button (top right window -> top right corner)
+button_font = pygame.font.SysFont(None, 24)
+button_rect = pygame.Rect(window_width - MARGIN - 100, MARGIN, 100, 40)
+button_text = button_font.render("PAUSE", True, BLACK)
+is_paused = False
+
 #---------------------------------------------
 #                   RUN
 
@@ -65,8 +78,22 @@ while run:
 
   # look to see if window exited
   for e in pygame.event.get():
+
+    """ USER EXIT CALL """
     if e.type == pygame.QUIT:
       run = False
+
+    """ USER SCREEN INPUT """
+    if e.type == pygame.MOUSEBUTTONDOWN:
+      if button_rect.collidepoint(e.pos): # if user pressed in pause button area (called button_rect)
+
+        is_paused = not is_paused # toggle pause
+        if is_paused:
+          pygame.mixer.music.pause()
+          button_text = button_font.render("PLAY", True, BLACK)
+        else:
+          pygame.mixer.music.unpause()
+          button_text = button_font.render("PAUSE", True, BLACK)
 
   # start new frame
   window.fill(BLACK)
@@ -80,6 +107,10 @@ while run:
   window.blit(left_label, (left_rect.x + LABEL_PADDING, left_rect.y + LABEL_PADDING))
   window.blit(right_label, (right_rect.x + LABEL_PADDING, right_rect.y + LABEL_PADDING))
   window.blit(bottom_label, (bottom_rect.x + LABEL_PADDING, bottom_rect.y + LABEL_PADDING))
+
+  # draw play/pause button
+  pygame.draw.rect(window, WHITE, button_rect)
+  window.blit(button_text, (button_rect.x + 15, button_rect.y + 10))
 
   # update to new frame
   pygame.display.flip()
