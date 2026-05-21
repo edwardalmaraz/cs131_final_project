@@ -88,7 +88,7 @@ def list_songs() -> list:
     return sorted(songs, key=lambda s: s["title"])
 
 
-def save_score(player_id: str, score: str, song_id: str):
+def save_score(player_id: str, score: float, song_id: str):
     entry = {
         "player_id": player_id,
         "song_id": song_id,
@@ -98,3 +98,46 @@ def save_score(player_id: str, score: str, song_id: str):
     blob_name = f"{song_id}/{player_id}_{entry['timestamp']}.json"
     blob = leaderboard_bucket.blob(blob_name)
     blob.upload_from_string(json.dumps(entry), content_type="application/json")
+
+
+def get_song_leaderboard(song_id: str) -> list:
+    blob = leaderboard_bucket.blob(f"{song_id}/leaderboard.json")
+    if not blob.exists():
+        return []
+
+    raw = blob.download_as_text()
+    payload = json.loads(raw)
+    leaderboard = payload.get("leaderboard", [])
+    if not isinstance(leaderboard, list):
+        return []
+
+    return sorted(leaderboard, key=lambda item: item.get("score", 0), reverse=True)
+
+
+def update_song_leaderboard(song_id: str, player_id: str, score: float) -> list:
+    blob = leaderboard_bucket.blob(f"{song_id}/leaderboard.json")
+    leaderboard = []
+    if blob.exists():
+        raw = blob.download_as_text()
+        payload = json.loads(raw)
+        leaderboard = payload.get("leaderboard", [])
+        if not isinstance(leaderboard, list):
+            leaderboard = []
+
+    existing = None
+    for entry in leaderboard:
+        if entry.get("player_id") == player_id:
+            existing = entry
+            break
+
+    if existing is None:
+        leaderboard.append({"player_id": player_id, "score": score})
+    elif score > existing.get("score", 0):
+        existing["score"] = score
+
+    leaderboard = sorted(leaderboard, key=lambda item: item.get("score", 0), reverse=True)
+    blob.upload_from_string(
+        json.dumps({"song_id": song_id, "leaderboard": leaderboard}, indent=2),
+        content_type="application/json",
+    )
+    return leaderboard

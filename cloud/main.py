@@ -110,13 +110,14 @@ async def compute_score(request: lyric_score_request):
     return lyric_score_response(player_id=request.player_id, lyric_score=result)
 
 
-# --- Server recieving Jetson packet (WAV + transcript) ---
-@app.post("/score/submit", summary="Receive WAV + transcript from Jetson and score lyrics", tags=["Scoring"])
+# --- Server recieving Jetson packet (WAV + transcript) to compute final score ---
+@app.post("/score/final", summary="Receive WAV + transcript from Jetson to calculate final score", tags=["Scoring"])
 async def submit_round(
     song_id: str = Form(...),
     player_id: str = Form(...),
     player_transcript: str = Form(...),
     wav_file: UploadFile = File(...),
+    move_score: float = Form(...),
 ):
     if not wav_file.filename.endswith(".wav"):
         raise HTTPException(status_code=400, detail="wav_file must be a .wav")
@@ -128,13 +129,30 @@ async def submit_round(
     lyric_score = score_lyrics(player_transcript, lyrics)
     save_score(player_id, lyric_score, song_id)
 
-    #TODO: pitch scoring — edward 
-    pitch_score = None
+    # TODO: pitch scoring
+    pitch_score = 0.0
+
+    # TODO: moves scoring
+    # move_score is currently passed from the Jetson client, but if not available it should be computed separately.
+    move_score = move_score if move_score is not None else 0.0
+
+    final_score = (lyric_score * 0.45) + (pitch_score * 0.10) + (move_score * 0.45)
+    update_song_leaderboard(song_id, player_id, final_score)
 
     return {
         "player_id": player_id,
         "song_id": song_id,
         "lyric_score": lyric_score,
         "pitch_score": pitch_score,
-        "wav_received": len(wav_bytes),
+        "move_score": move_score,
+        "final_score": final_score,
+    }
+
+
+@app.get("/leaderboard/{song_id}", summary="Get leaderboard for a given song", tags=["Leaderboard"])
+async def get_leaderboard(song_id: str):
+    leaderboard = get_song_leaderboard(song_id)
+    return {
+        "song_id": song_id,
+        "leaderboard": leaderboard,
     }
