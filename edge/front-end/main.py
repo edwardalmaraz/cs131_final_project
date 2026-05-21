@@ -4,11 +4,18 @@ TODO
 - Display the PoseModel frames from nvidia-inference onto the left hand box
 - Lyrics (should be some sort of yellow color kind of like kareoke on yt)
 - add leaderboard menu
-- 
+-
+
+- END-OF-SONG: detect when audio finishes, show "Good job!" in lyrics box
+- END-OF-SONG: handle gap between last timestamp and audio finishing
 """
 
 
 import pygame
+from UI.models import Song
+
+The_Feels = Song.from_json("songs/json/the_feels.json")
+
 pygame.init()
 #---------------------------------------------
 #                  INIT WINDOW
@@ -19,7 +26,6 @@ pygame.display.set_caption("Kareoke + Dance")
 #                  INIT SONG
 SONG_DIR = "songs"
 pygame.mixer.music.load(f"{SONG_DIR}/TWICE The Feels MV.mp3")
-pygame.mixer.music.play()
 
 
 #---------------------------------------------
@@ -28,10 +34,21 @@ pygame.mixer.music.play()
 # constants
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+YELLOW = (255, 255, 0)
 LINE_WIDTH = 2
 MARGIN = 20
 GAP = 20
 LABEL_PADDING = 10
+LINE_OFFSET = 80
+
+#text fonts
+small_font = pygame.font.SysFont("comicsansms", 24)
+big_font = pygame.font.SysFont("comicsansms", 36)
+
+#lyrics and pose index
+current_lyrics_index = 1
+current_pose_index = 0
+current_display = "start screen"
 
 # window labels
 label_font = pygame.font.SysFont(None, 26)
@@ -66,19 +83,24 @@ left_camera_rect = pygame.Rect(
 # create play/pause button (top right window -> top right corner)
 button_font = pygame.font.SysFont(None, 24)
 button_rect = pygame.Rect(window_width - MARGIN - 100, MARGIN, 100, 40)
-button_text = button_font.render("PAUSE", True, BLACK)
-is_paused = True
+button_text = button_font.render("START", True, BLACK)
+game_state = "not_started"
 
-#text fonts
-top_line_font = pygame.font.SysFont("Arial", 24)
-middle_line_font = pygame.font.SysFont("Arial", 36) 
-bottom_line_font = pygame.font.SysFont("Arial", 24)
+#leaderboard button
+
 
 #---------------------------------------------
 #                   RUN
 
 # initialize window
 run = True
+
+pose_images = []
+
+for pose_moves in The_Feels.poses:
+    image = pygame.image.load(pose_moves.image_path)
+    image = pygame.transform.scale(image, (right_rect.width, right_rect.height))
+    pose_images.append(image)
 
 while run:
   pygame.time.delay(15)
@@ -91,16 +113,42 @@ while run:
       run = False
 
     """ USER SCREEN INPUT """
-    if e.type == pygame.MOUSEBUTTONDOWN:
-      if button_rect.collidepoint(e.pos): # if user pressed in pause button area (called button_rect)
+    if e.type == pygame.MOUSEBUTTONDOWN: # if user pressed in pause button area (called button_rect)
+        if button_rect.collidepoint(e.pos):
 
-        is_paused = not is_paused # toggle pause
-        if is_paused:
-          pygame.mixer.music.pause()
-          button_text = button_font.render("PLAY", True, BLACK)
-        else:
-          pygame.mixer.music.unpause()
-          button_text = button_font.render("PAUSE", True, BLACK)
+            if game_state == "not_started":
+                pygame.mixer.music.play()
+                song_start_time = pygame.time.get_ticks()
+                game_state = "playing"
+                button_text = button_font.render("PAUSE", True, BLACK)
+
+            elif game_state == "playing":
+                pygame.mixer.music.pause()
+                pause_start_time = pygame.time.get_ticks()
+                game_state = "paused"
+                button_text = button_font.render("PLAY", True, BLACK)
+
+            elif game_state == "paused":
+                pygame.mixer.music.unpause()
+                paused_duration = pygame.time.get_ticks() - pause_start_time
+                song_start_time += paused_duration
+                game_state = "playing"
+                button_text = button_font.render("PAUSE", True, BLACK)
+
+
+  if game_state == "playing":
+      current_song_time = pygame.time.get_ticks() - song_start_time
+
+      if current_lyrics_index + 1 < len(The_Feels.lyrics):
+          if current_song_time >= The_Feels.lyrics[current_lyrics_index + 1].timestamp_ms:
+            current_lyrics_index += 1
+
+      if current_pose_index + 1 < len(The_Feels.poses):
+          if current_song_time >= The_Feels.poses[current_pose_index + 1].timestamp_ms:
+            current_pose_index += 1
+          
+
+  # advance lyric index based on song time
 
   # start new frame
   window.fill(BLACK)
@@ -111,26 +159,29 @@ while run:
   pygame.draw.rect(window, WHITE, bottom_rect, LINE_WIDTH)
 
   # draw text
-  window.blit(left_label, (left_rect.x + LABEL_PADDING, left_rect.y + LABEL_PADDING))
-  window.blit(right_label, (right_rect.x + LABEL_PADDING, right_rect.y + LABEL_PADDING))
-  window.blit(bottom_label, (bottom_rect.x + LABEL_PADDING, bottom_rect.y + LABEL_PADDING))
+  text_surface1 = small_font.render(The_Feels.lyrics[current_lyrics_index - 1].text, True, WHITE)
+  text_surface2 = big_font.render(The_Feels.lyrics[current_lyrics_index].text, True, YELLOW)
 
-  # display lyrics
-  text_surface1 = top_line_font.render("Hello, Pygame!", True, WHITE)
-  text_surface2 = middle_line_font.render("Hello, Pygame!", True, WHITE)
-  text_surface3 = bottom_line_font.render("Hello, Pygame!", True, WHITE)
-  text_rect1 = text_surface1.get_rect(center = bottom_rect.top)
-  text_rect2 = text_surface2.get_rect(center = bottom_rect.center)
-  text_rect3 = text_surface3.get_rect(center = bottom_rect.left)
-  window.blit(text_surface, text_rect1)
-  window.blit(text_surface, text_rect2)
-  window.blit(text_surface, text_rect3)
-  
+  text_rect1 = text_surface1.get_rect(center=(bottom_rect.centerx, bottom_rect.top + 80))
+  text_rect2 = text_surface2.get_rect(center=bottom_rect.center)
+
+  window.blit(text_surface1, text_rect1)
+  window.blit(text_surface2, text_rect2)
+
+  if current_lyrics_index + 1 < len(The_Feels.lyrics):
+    text_surface3 = small_font.render(The_Feels.lyrics[current_lyrics_index + 1].text, True, WHITE)
+    text_rect3 = text_surface3.get_rect(center=(bottom_rect.centerx, bottom_rect.bottom - 80))
+    window.blit(text_surface3, text_rect3)
+
+  window.blit(pose_images[current_pose_index], left_rect) 
+
+  if current_pose_index + 1 < len(pose_images):
+    window.blit(pose_images[current_pose_index + 1], right_rect)
 
   # draw play/pause button
-  pygame.draw.rect(window, WHITE, button_rect)
-  window.blit(button_text, (button_rect.x + 15, button_rect.y + 10))
-
+  pygame.draw.rect(window, BLACK, button_rect, LINE_WIDTH)
+  window.blit(button_text, (button_rect.x + 15, button_rect.y + 15))
+  #pygame.draw.rect(surface, color, rect, width)
 
   # update to new frame
   pygame.display.flip()
