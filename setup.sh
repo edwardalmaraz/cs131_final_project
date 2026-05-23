@@ -13,4 +13,6 @@ apt-get install -y python3-pip python3-dev build-essential portaudio19-dev pytho
 python3 -m pip install --isolated --no-cache-dir --index-url https://pypi.org/simple -r "$SCRIPT_DIR/edge/requirements.txt"
 echo "Dependencies installed."  
 
+apt-get install -y python3-matplotlib
+
 export SDL_AUDIODRIVER=alsa
