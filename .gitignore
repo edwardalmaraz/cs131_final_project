@@ -1,7 +1,10 @@
 # can't push these for copyright reasons :(
-edge/front-end/songs/cupid.json
-edge/front-end/songs/cupid.mp3venv/
+edge/front-end/songs/metadata.json
+edge/front-end/songs/audio.mp3
 /venv
 .venv
 edge/front-end/UI/__pycache__/
 edge/front-end/__pycache__
+/edge/front-end/voice_recording/*
+/edge/front-end/record.py
+/edge/tests/audio_source.py

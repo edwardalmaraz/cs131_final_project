@@ -5,7 +5,7 @@ import pygame
 pygame.mixer.quit()
 pygame.mixer.init(devicename="EarPods, USB Audio")
 
-pygame.mixer.music.load("../front-end/songs/cupid.mp3")
+pygame.mixer.music.load("../front-end/songs/audio.mp3")
 pygame.mixer.music.play()
 
 while pygame.mixer.music.get_busy():
