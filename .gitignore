@@ -1,3 +1,5 @@
+venv
+__pycache__
 # can't push these for copyright reasons :(
 edge/front-end/songs/metadata.json
 edge/front-end/songs/audio.mp3
