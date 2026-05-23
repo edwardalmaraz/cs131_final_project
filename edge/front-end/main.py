@@ -108,7 +108,7 @@ music_loaded = True
 try:
     pygame.mixer.quit()  # undo auto-init from pygame.init() before re-initializing with custom device
     pygame.mixer.init(devicename="EarPods, USB Audio")
-    pygame.mixer.music.load(f"{SONG_DIR}/audio.mp3")
+    pygame.mixer.music.load(f"{SONG_DIR}/cupid.mp3")
 except pygame.error as e:
     music_loaded = False
     print(f"Music unavailable: {e}")
