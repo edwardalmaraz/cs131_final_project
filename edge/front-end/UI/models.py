@@ -45,7 +45,7 @@ class Song:
 
         poses = []
 
-        for pose_data in data["poses"]:
+        for pose_data in data["pose_images"]:
             pose = Pose(
                 pose_id=pose_data["pose_id"],
                 timestamp_ms=pose_data["timestamp_ms"],

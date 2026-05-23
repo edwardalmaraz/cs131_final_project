@@ -1,0 +1,192 @@
+
+=== Timestamp: 5.0s ===
+    Direction Vectors (relative to neck):
+      neck -> nose: (15.7, 130.3)
+      neck -> left_eye: (-12.1, 148.9)
+      neck -> right_eye: (43.7, 149.3)
+      neck -> left_ear: (-56.0, 116.7)
+      neck -> right_ear: (80.6, 121.4)
+      neck -> left_shoulder: (-125.2, -2.1)
+      neck -> right_shoulder: (120.1, 0.5)
+      neck -> left_elbow: (-284.3, -98.6)
+      neck -> right_elbow: (265.7, -76.5)
+      neck -> left_wrist: (-209.6, 78.8)
+      neck -> right_wrist: (203.2, 77.0)
+      neck -> left_hip: (-63.0, -321.8)
+      neck -> right_hip: (120.6, -321.8)
+
+=== Timestamp: 10.0s ===
+    Direction Vectors (relative to neck):
+      neck -> nose: (203.2, 93.6)
+      neck -> left_eye: (164.9, 132.5)
+      neck -> right_eye: (213.2, 135.7)
+      neck -> left_ear: (36.4, 124.1)
+      neck -> left_shoulder: (-170.4, 11.2)
+      neck -> right_shoulder: (179.3, -5.9)
+      neck -> left_elbow: (-362.5, -185.5)
+      neck -> right_elbow: (363.0, -186.6)
+
+=== Timestamp: 15.0s ===
+    Direction Vectors (relative to neck):
+      neck -> nose: (29.9, 126.7)
+      neck -> left_eye: (-3.0, 147.6)
+      neck -> right_eye: (52.8, 148.4)
+      neck -> left_ear: (-62.8, 117.4)
+      neck -> right_ear: (77.9, 126.3)
+      neck -> left_shoulder: (-132.9, -16.7)
+      neck -> right_shoulder: (126.1, 14.3)
+      neck -> left_elbow: (-313.7, -131.5)
+      neck -> right_elbow: (273.4, -32.2)
+      neck -> left_wrist: (-284.0, 20.5)
+      neck -> right_wrist: (249.7, 80.5)
+      neck -> right_hip: (177.9, -312.5)
+
+=== Timestamp: 20.1s ===
+    Direction Vectors (relative to neck):
+      neck -> nose: (-26.2, 150.4)
+      neck -> left_eye: (-55.7, 168.1)
+      neck -> right_eye: (-1.2, 176.1)
+      neck -> left_ear: (-87.2, 128.7)
+      neck -> right_ear: (45.2, 149.9)
+      neck -> left_shoulder: (-142.2, -8.4)
+      neck -> right_shoulder: (133.6, 7.9)
+      neck -> left_elbow: (-301.3, -154.0)
+      neck -> right_elbow: (289.4, -107.2)
+      neck -> left_wrist: (-351.8, -4.2)
+      neck -> right_wrist: (267.3, 42.7)
+
+=== Timestamp: 25.1s ===
+    Direction Vectors (relative to neck):
+      neck -> nose: (-7.3, 182.8)
+      neck -> left_eye: (-42.1, 216.0)
+      neck -> right_eye: (36.9, 215.9)
+      neck -> left_ear: (-87.7, 183.7)
+      neck -> right_ear: (91.6, 180.7)
+      neck -> left_shoulder: (-182.7, 6.3)
+      neck -> right_shoulder: (178.9, -2.4)
+      neck -> left_elbow: (-367.8, -206.3)
+      neck -> right_elbow: (344.5, -248.7)
+      neck -> left_wrist: (-403.4, -35.5)
+      neck -> right_wrist: (426.2, -88.0)
+
+=== Timestamp: 30.1s ===
+    Direction Vectors (relative to neck):
+      neck -> nose: (4.4, 139.0)
+      neck -> left_eye: (-27.4, 148.4)
+      neck -> right_eye: (31.5, 156.2)
+      neck -> left_ear: (-67.5, 108.4)
+      neck -> right_ear: (70.7, 114.2)
+      neck -> left_shoulder: (-108.9, -1.7)
+      neck -> right_shoulder: (99.6, -0.5)
+      neck -> left_elbow: (-147.0, -159.6)
+      neck -> right_elbow: (154.3, -101.7)
+      neck -> left_wrist: (-82.0, 37.0)
+      neck -> right_wrist: (77.3, 36.7)
+      neck -> left_hip: (-61.7, -323.7)
+      neck -> right_hip: (100.4, -324.5)
+
+=== Timestamp: 35.2s ===
+    Direction Vectors (relative to neck):
+      neck -> nose: (-58.1, 151.5)
+      neck -> left_eye: (-91.1, 184.2)
+      neck -> right_eye: (-14.1, 189.5)
+      neck -> right_ear: (73.4, 168.5)
+      neck -> left_shoulder: (-159.9, 11.4)
+      neck -> right_shoulder: (163.0, -14.9)
+      neck -> left_elbow: (-263.7, -181.8)
+      neck -> right_elbow: (341.9, -227.6)
+
+=== Timestamp: 40.2s ===
+    Direction Vectors (relative to neck):
+      neck -> nose: (-65.9, 135.6)
+      neck -> left_eye: (-103.1, 158.8)
+      neck -> right_eye: (-39.9, 176.8)
+      neck -> left_ear: (-125.5, 129.1)
+      neck -> right_ear: (36.1, 173.9)
+      neck -> left_shoulder: (-156.0, 9.3)
+      neck -> right_shoulder: (155.3, -9.9)
+      neck -> left_elbow: (-233.3, -161.0)
+      neck -> right_elbow: (274.2, -195.0)
+      neck -> left_wrist: (-278.9, -253.3)
+
+=== Timestamp: 45.2s ===
+  No poses detected
+
+=== Timestamp: 50.3s ===
+  No poses detected
+
+=== Timestamp: 55.3s ===
+  No poses detected
+
+=== Timestamp: 60.3s ===
+  No poses detected
+
+=== Timestamp: 65.3s ===
+  No poses detected
+
+=== Timestamp: 70.4s ===
+  No poses detected
+
+=== Timestamp: 75.4s ===
+  No poses detected
+
+=== Timestamp: 80.4s ===
+  No poses detected
+
+=== Timestamp: 85.4s ===
+    Direction Vectors (relative to neck):
+      neck -> left_shoulder: (-149.3, 0.0)
+      neck -> right_shoulder: (145.5, -9.1)
+      neck -> left_elbow: (-181.0, -267.4)
+      neck -> right_elbow: (211.3, -245.9)
+      neck -> left_wrist: (-172.2, -516.2)
+      neck -> right_wrist: (291.1, -476.8)
+      neck -> left_hip: (-62.4, -563.5)
+      neck -> right_hip: (142.1, -540.3)
+
+=== Timestamp: 90.4s ===
+  No poses detected
+
+=== Timestamp: 95.5s ===
+  No poses detected
+
+=== Timestamp: 100.5s ===
+  No poses detected
+
+=== Timestamp: 105.6s ===
+  No poses detected
+
+=== Timestamp: 110.6s ===
+  No poses detected
+
+=== Timestamp: 115.6s ===
+  No poses detected
+
+=== Timestamp: 120.6s ===
+    Direction Vectors (relative to neck):
+      neck -> nose: (149.4, 35.9)
+      neck -> left_eye: (94.3, 70.9)
+      neck -> right_eye: (193.3, 74.4)
+      neck -> left_ear: (-45.0, 79.8)
+      neck -> left_shoulder: (-182.0, 26.7)
+      neck -> right_shoulder: (183.5, -23.6)
+      neck -> left_elbow: (-227.6, -167.7)
+      neck -> left_wrist: (-194.2, -323.9)
+      neck -> left_hip: (-128.2, -321.1)
+      neck -> right_hip: (67.5, -334.7)
+
+=== Timestamp: 125.6s ===
+    Direction Vectors (relative to neck):
+      neck -> nose: (6.2, 84.1)
+      neck -> left_eye: (-30.8, 109.0)
+      neck -> right_eye: (30.6, 113.8)
+      neck -> left_ear: (-82.5, 90.2)
+      neck -> right_ear: (69.6, 103.5)
+      neck -> left_shoulder: (-146.5, 0.7)
+      neck -> right_shoulder: (144.7, -4.3)
+      neck -> left_elbow: (-298.4, -49.7)
+      neck -> right_elbow: (229.4, -54.5)
+      neck -> left_wrist: (-218.0, -191.5)
+      neck -> right_wrist: (227.7, -190.9)
+      neck -> left_hip: (-79.5, -258.4)
+      neck -> right_hip: (105.6, -250.1)

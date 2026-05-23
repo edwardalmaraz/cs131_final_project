@@ -1,12 +1,19 @@
 import os
 import pygame
 from record import start_recording, stop_recording
+from comparsion_pose import parse_pose_sequence_data, parse_frame_data, compare_sequence_to_frames, total_accuracy
+
 
 # snapshot pose data to a file every 5 seconds
 # imported from posenet example code
-POSE_OUTPUT_FILE = "/player_poses/pose_locations.txt"
+POSE_OUTPUT_FILE = "player_poses/pose_locations.txt"
 os.makedirs(os.path.dirname(POSE_OUTPUT_FILE), exist_ok=True)
+
+# file needed for pose comparison, which is used to calculate the score at the end of the game
+POSE_COMPARISON_FILE = "songs/metadata.json"
+os.makedirs(os.path.dirname(POSE_COMPARISON_FILE), exist_ok=True)
 POSE_SNAPSHOT_INTERVAL_MS = 5000
+
 
 
 def _write_pose_snapshot(state, current_song_time_ms):
@@ -142,6 +149,18 @@ def update_state(state):
         if state["music_loaded"]:
             pygame.mixer.music.stop()
         stop_recording()
+
+        try:
+            sequence_order, poses = parse_pose_sequence_data(POSE_COMPARISON_FILE)
+            frame_data = parse_frame_data(POSE_OUTPUT_FILE)
+            results = compare_sequence_to_frames(sequence_order, poses, frame_data)
+            score = int(total_accuracy(results))
+        except Exception as e:
+            print(f"Score calculation failed: {e}")
+            score = 0
+
+        state["final_score"] = score
+        state["end_score_text"] = state["end_score_font"].render(f"Score: {score}%", True, state["YELLOW"])
 
     if state["pose_camera"].available and not state["pose_camera"].is_streaming():
         state["run"] = False
