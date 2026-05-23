@@ -10,3 +10,4 @@ edge/front-end/__pycache__
 /edge/front-end/voice_recording/*
 /edge/front-end/record.py
 /edge/tests/audio_source.py
+/edge/front-end/player_poses/pose_locations.txt
