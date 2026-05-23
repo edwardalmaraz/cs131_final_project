@@ -112,7 +112,7 @@ def draw_all_poses(json_file: str = "song_example.json", save_individual: bool =
         os.makedirs(output_dir, exist_ok=True)
         for name in pose_names:
             fig, ax = draw_pose(name, json_file=json_file)
-            fig.savefig(os.path.join(output_dir, f"{name}.img"), dpi=150, bbox_inches="tight", transparent=True)
+            fig.savefig(os.path.join(output_dir, f"{name}.png"), dpi=150, bbox_inches="tight", transparent=True)
             plt.close(fig)
 
     # Draw and return the full grid
