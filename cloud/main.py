@@ -51,8 +51,8 @@ async def upload_song_endpoint(
     song_id: str = Form(...),
     song_title: str = Form(...),
     artist_name: str = Form(...),
-    sequence_order: str = Form(...),
-    poses: str = Form(...),
+    sequence_order: Optional[str] = Form(None),
+    poses: Optional[str] = Form(None),  # JSON string of list of pose names
     album: Optional[str] = Form(None),
     year: Optional[int] = Form(None),
     genre: Optional[str] = Form(None),
@@ -64,7 +64,7 @@ async def upload_song_endpoint(
         raise HTTPException(status_code=400, detail="mp3_file must be a .mp3")
 
     try:
-        poses_list = json.loads(poses)
+        poses_list = json.loads(poses) if poses else []
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="poses must be a valid JSON array")
 
