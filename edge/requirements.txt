@@ -4,3 +4,4 @@ pygame
 sounddevice
 pyaudio
 scipy
+requests
