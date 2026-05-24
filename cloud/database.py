@@ -86,10 +86,10 @@ def list_songs() -> list:
             metadata = json.loads(blob.download_as_text())
             songs.append({
                 "song_id": metadata["song_id"],
-                "title": metadata["title"],
-                "artist": metadata["artist"],
+                "song_title": metadata["song_title"],
+                "artist_name": metadata["artist_name"],
             })
-    return sorted(songs, key=lambda s: s["title"])
+    return sorted(songs, key=lambda s: s["song_title"])
 
 
 def save_score(player_id: str, score: float, song_id: str):
