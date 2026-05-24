@@ -4,6 +4,8 @@ import pygame
 from record import start_recording, stop_recording
 from comparsion_pose import parse_pose_sequence_data, parse_frame_data, compare_sequence_to_frames, total_accuracy
 from draw_pose import draw_pose, draw_all_poses
+from cloud_api import submit_final_score, fetch_leaderboard, fetch_songs
+from UI.models import LeaderboardEntry
 
 
 
@@ -104,27 +106,43 @@ def handle_events(state):
        if e.type == pygame.KEYDOWN:
            if state["current_display"] == "start_screen":
                if e.key == pygame.K_1:
-                   state["current_display"] = "gameplay"
-                   with open(POSE_OUTPUT_FILE, "w") as f:
-                       f.write("")
-                   # will have to insert the api call later here
-                   # draws poses from metadata.json and saves them to the poses folder, which is used
-                   # for pose comparison later
-                   draw_all_poses("songs/metadata.json", save_individual=True, output_dir="poses")
-
-
-                   #loads images here rather than main.py as by then the images was not created yet
-                   right_rect = state["right_rect"]
-                   state["pose_images"] = []
-                   for pose_move in state["LOADED_SONG"].poses:
-                       image = pygame.image.load(pose_move.image_path)
-                       image = pygame.transform.scale(image, (right_rect.width, right_rect.height))
-                       state["pose_images"].append(image)
+                   state["player_name_input"] = ""
+                   state["current_display"] = "name_entry"
                elif e.key == pygame.K_2:
-                   print("online library - not built yet")
+                   state["library_songs"] = fetch_songs()
+                   state["library_selected_index"] = 0
+                   state["current_display"] = "song_library"
                elif e.key == pygame.K_3:
                    state["current_display"] = "leaderboard"
+                   song_id = state["LOADED_SONG"].song_id
+                   entries = fetch_leaderboard(song_id)
+                   state["leaderboard_entries"] = [
+                       LeaderboardEntry(player_name=e["player_id"], score=round(e["score"] * 100), rank=i + 1)
+                       for i, e in enumerate(entries)
+                   ]
 
+           elif state["current_display"] == "name_entry":
+               if e.key == pygame.K_ESCAPE:
+                   state["current_display"] = "start_screen"
+               elif e.key == pygame.K_BACKSPACE:
+                   state["player_name_input"] = state["player_name_input"][:-1]
+               elif e.key == pygame.K_RETURN:
+                   name = state["player_name_input"].strip()
+                   if name:
+                       state["player_id"] = name
+                       state["player_name_input"] = ""
+                       state["current_display"] = "gameplay"
+                       with open(POSE_OUTPUT_FILE, "w") as f:
+                           f.write("")
+                       draw_all_poses("songs/metadata.json", save_individual=True, output_dir="poses")
+                       right_rect = state["right_rect"]
+                       state["pose_images"] = []
+                       for pose_move in state["LOADED_SONG"].poses:
+                           image = pygame.image.load(pose_move.image_path)
+                           image = pygame.transform.scale(image, (right_rect.width, right_rect.height))
+                           state["pose_images"].append(image)
+               elif e.unicode.isprintable() and len(state["player_name_input"]) < 20:
+                   state["player_name_input"] += e.unicode
 
            elif state["current_display"] == "gameplay":
                if e.key == pygame.K_ESCAPE:
@@ -138,6 +156,19 @@ def handle_events(state):
                        stop_recording()
                        state["current_display"] = "start_screen"
 
+
+           elif state["current_display"] == "song_library":
+               songs = state["library_songs"]
+               if e.key == pygame.K_ESCAPE:
+                   state["current_display"] = "start_screen"
+               elif e.key == pygame.K_UP and songs:
+                   state["library_selected_index"] = (state["library_selected_index"] - 1) % len(songs)
+               elif e.key == pygame.K_DOWN and songs:
+                   state["library_selected_index"] = (state["library_selected_index"] + 1) % len(songs)
+               elif e.key == pygame.K_RETURN and songs:
+                   selected = songs[state["library_selected_index"]]
+                   print(f"Selected song: {selected['song_title']} (id: {selected['song_id']})")
+                   # TODO: download and load selected song, then navigate to gameplay
 
            elif state["current_display"] == "leaderboard":
                if e.key == pygame.K_ESCAPE or e.key == pygame.K_DELETE:
@@ -207,9 +238,18 @@ def update_state(state):
        os.makedirs("poses", exist_ok=True)
 
 
-       #currently this is just a placeholder for the score, but it will be used to send to server later
-       state["final_score"] = score
-       state["end_score_text"] = state["end_score_font"].render(f"Score: {score}%", True, state["YELLOW"])
+       song_id = state["LOADED_SONG"].song_id
+       player_id = state.get("player_id", "player1")
+       cloud_score = submit_final_score(
+           song_id=song_id,
+           player_id=player_id,
+           wav_path="voice_recording/output.wav",
+           move_score=score,
+       )
+       display_score = round(cloud_score * 100) if cloud_score is not None else score
+
+       state["final_score"] = display_score
+       state["end_score_text"] = state["end_score_font"].render(f"Score: {display_score}%", True, state["YELLOW"])
 
 
    if state["pose_camera"].available and not state["pose_camera"].is_streaming():

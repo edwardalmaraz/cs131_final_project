@@ -79,6 +79,42 @@ def render(state):
         pygame.draw.rect(window, state["BLACK"], state["button_rect"], state["LINE_WIDTH"])
         window.blit(state["button_text"], (state["button_rect"].x + 15, state["button_rect"].y + 15))
 
+    elif state["current_display"] == "name_entry":
+        title = state["name_entry_title_font"].render("ENTER YOUR NAME", True, state["WHITE"])
+        window.blit(title, title.get_rect(center=(state["window_width"] // 2, 180)))
+
+        name_text = state["player_name_input"] + "|"
+        name_surface = state["name_entry_input_font"].render(name_text, True, state["YELLOW"])
+        window.blit(name_surface, name_surface.get_rect(center=(state["window_width"] // 2, state["window_height"] // 2)))
+
+        hint = state["name_entry_hint_font"].render("ENTER to confirm   ESC to go back", True, state["WHITE"])
+        window.blit(hint, hint.get_rect(center=(state["window_width"] // 2, state["window_height"] - 60)))
+
+    elif state["current_display"] == "song_library":
+        title = state["library_title_font"].render("ONLINE LIBRARY", True, state["WHITE"])
+        title_rect = title.get_rect(center=(state["window_width"] // 2, 80))
+        window.blit(title, title_rect)
+
+        songs = state["library_songs"]
+        selected = state["library_selected_index"]
+
+        if not songs:
+            msg = state["library_entry_font"].render("No songs found on server.", True, state["WHITE"])
+            window.blit(msg, msg.get_rect(center=(state["window_width"] // 2, state["window_height"] // 2)))
+        else:
+            entry_start_y = 180
+            entry_spacing = 55
+            for i, song in enumerate(songs):
+                color = state["YELLOW"] if i == selected else state["WHITE"]
+                prefix = "> " if i == selected else "  "
+                text = f"{prefix}{song['title']}  —  {song['artist']}"
+                surface = state["library_entry_font"].render(text, True, color)
+                rect = surface.get_rect(center=(state["window_width"] // 2, entry_start_y + i * entry_spacing))
+                window.blit(surface, rect)
+
+        hint = state["library_hint_font"].render("UP/DOWN to navigate   ENTER to select   ESC to go back", True, state["WHITE"])
+        window.blit(hint, hint.get_rect(center=(state["window_width"] // 2, state["window_height"] - 50)))
+
     elif state["current_display"] == "leaderboard":
         title_rect = state["leaderboard_title_text"].get_rect(center=(state["window_width"] // 2, 100))
         window.blit(state["leaderboard_title_text"], title_rect)

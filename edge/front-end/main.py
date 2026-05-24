@@ -232,6 +232,16 @@ end_score_text = end_score_font.render(f"Score: {final_score}", True, YELLOW)
 end_hint_text = end_hint_font.render("Press ENTER to return to menu", True, WHITE)
 
 
+# name entry
+name_entry_title_font = pygame.font.SysFont(None, 64)
+name_entry_input_font = pygame.font.SysFont(None, 56)
+name_entry_hint_font = pygame.font.SysFont(None, 28)
+
+# song library
+library_title_font = pygame.font.SysFont(None, 64)
+library_entry_font = pygame.font.SysFont(None, 36)
+library_hint_font = pygame.font.SysFont(None, 28)
+
 # leaderboard
 leaderboard_title_font = pygame.font.SysFont(None, 64)
 leaderboard_entry_font = pygame.font.SysFont(None, 36)
@@ -305,6 +315,16 @@ state = {
    "leaderboard_title_text": leaderboard_title_text,
    "leaderboard_entry_font": leaderboard_entry_font,
    "leaderboard_hint_text": leaderboard_hint_text,
+   "player_id": "player1",
+   "player_name_input": "",
+   "name_entry_title_font": name_entry_title_font,
+   "name_entry_input_font": name_entry_input_font,
+   "name_entry_hint_font": name_entry_hint_font,
+   "library_songs": [],
+   "library_selected_index": 0,
+   "library_title_font": library_title_font,
+   "library_entry_font": library_entry_font,
+   "library_hint_font": library_hint_font,
    "pose_images": pose_images,
    "pose_camera": pose_camera,
    "current_lyrics_index": 1,

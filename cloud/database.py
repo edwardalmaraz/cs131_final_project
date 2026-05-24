@@ -86,8 +86,8 @@ def list_songs() -> list:
             metadata = json.loads(blob.download_as_text())
             songs.append({
                 "song_id": metadata["song_id"],
-                "title": metadata.get("title") or metadata.get("song_title", "Unknown"),
-                "artist": metadata.get("artist") or metadata.get("artist_name", "Unknown"),
+                "title": metadata["title"],
+                "artist": metadata["artist"],
             })
     return sorted(songs, key=lambda s: s["title"])
 
