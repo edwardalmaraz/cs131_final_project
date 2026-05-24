@@ -1,11 +1,12 @@
 import os
+import json
 import shutil
 import pygame
 from record import start_recording, stop_recording
 from comparsion_pose import parse_pose_sequence_data, parse_frame_data, compare_sequence_to_frames, total_accuracy
 from draw_pose import draw_pose, draw_all_poses
-from cloud_api import submit_final_score, fetch_leaderboard, fetch_songs
-from UI.models import LeaderboardEntry
+from cloud_api import submit_final_score, fetch_leaderboard, fetch_songs, fetch_song_metadata, fetch_song_audio
+from UI.models import LeaderboardEntry, Song
 
 
 
@@ -21,9 +22,23 @@ POSE_COMPARISON_FILE = "songs/metadata.json"
 os.makedirs(os.path.dirname(POSE_COMPARISON_FILE), exist_ok=True)
 POSE_SNAPSHOT_INTERVAL_MS = 5000
 
+DOWNLOADED_AUDIO_PATH = "songs/downloaded_audio.mp3"
+DOWNLOADED_METADATA_PATH = "songs/downloaded_metadata.json"
 
 
 
+
+
+
+def _cleanup_downloaded_audio(state):
+   path = state.get("downloaded_audio_path")
+   if path and os.path.exists(path):
+       try:
+           os.remove(path)
+           print(f"Deleted downloaded audio: {path}")
+       except OSError as e:
+           print(f"Failed to delete {path}: {e}")
+   state["downloaded_audio_path"] = None
 
 
 def _write_pose_snapshot(state, current_song_time_ms):
@@ -134,7 +149,7 @@ def handle_events(state):
                        state["current_display"] = "gameplay"
                        with open(POSE_OUTPUT_FILE, "w") as f:
                            f.write("")
-                       draw_all_poses("songs/metadata.json", save_individual=True, output_dir="poses")
+                       draw_all_poses(state.get("active_metadata_path", POSE_COMPARISON_FILE), save_individual=True, output_dir="poses")
                        right_rect = state["right_rect"]
                        state["pose_images"] = []
                        for pose_move in state["LOADED_SONG"].poses:
@@ -154,6 +169,7 @@ def handle_events(state):
                        if state["music_loaded"]:
                            pygame.mixer.music.stop()
                        stop_recording()
+                       _cleanup_downloaded_audio(state)
                        state["current_display"] = "start_screen"
 
 
@@ -167,8 +183,46 @@ def handle_events(state):
                    state["library_selected_index"] = (state["library_selected_index"] + 1) % len(songs)
                elif e.key == pygame.K_RETURN and songs:
                    selected = songs[state["library_selected_index"]]
-                   print(f"Selected song: {selected['song_title']} (id: {selected['song_id']})")
-                   # TODO: download and load selected song, then navigate to gameplay
+                   song_id = selected["song_id"]
+                   print(f"Selected song: {selected['song_title']} (id: {song_id})")
+
+                   metadata = fetch_song_metadata(song_id)
+                   if metadata is not None:
+                       # API replaces lyrics with raw text; ensure it's an array for Song.from_json
+                       if not isinstance(metadata.get("lyrics"), list):
+                           metadata["lyrics"] = []
+                       with open(DOWNLOADED_METADATA_PATH, "w") as mf:
+                           json.dump(metadata, mf)
+
+                       if fetch_song_audio(song_id, DOWNLOADED_AUDIO_PATH):
+                           state["LOADED_SONG"] = Song.from_json(DOWNLOADED_METADATA_PATH)
+                           state["active_metadata_path"] = DOWNLOADED_METADATA_PATH
+                           state["downloaded_audio_path"] = DOWNLOADED_AUDIO_PATH
+
+                           if state["music_loaded"]:
+                               pygame.mixer.music.stop()
+                           try:
+                               pygame.mixer.music.load(DOWNLOADED_AUDIO_PATH)
+                               state["music_loaded"] = True
+                           except pygame.error as pe:
+                               print(f"Music load failed: {pe}")
+                               state["music_loaded"] = False
+
+                           state["song_duration_ms"] = max(
+                               state["LOADED_SONG"].lyrics[-1].timestamp_ms if state["LOADED_SONG"].lyrics else 0,
+                               state["LOADED_SONG"].poses[-1].timestamp_ms if state["LOADED_SONG"].poses else 0,
+                           )
+                           state["end_song_name_text"] = state["end_title_font"].render(
+                               state["LOADED_SONG"].song_title, True, state["WHITE"]
+                           )
+                           state["current_lyrics_index"] = 1
+                           state["current_pose_index"] = 0
+                           state["player_name_input"] = ""
+                           state["current_display"] = "name_entry"
+                       else:
+                           print(f"Failed to download audio for {song_id}")
+                   else:
+                       print(f"Failed to fetch metadata for {song_id}")
 
            elif state["current_display"] == "leaderboard":
                if e.key == pygame.K_ESCAPE or e.key == pygame.K_DELETE:
@@ -224,7 +278,8 @@ def update_state(state):
 
        #after song ends, calculate score based on pose comparison
        try:
-           sequence_order, poses = parse_pose_sequence_data(POSE_COMPARISON_FILE)
+           active_meta = state.get("active_metadata_path", POSE_COMPARISON_FILE)
+           sequence_order, poses = parse_pose_sequence_data(active_meta)
            frame_data = parse_frame_data(POSE_OUTPUT_FILE)
            results = compare_sequence_to_frames(sequence_order, poses, frame_data)
            score = int(total_accuracy(results))
@@ -232,6 +287,7 @@ def update_state(state):
            print(f"Score calculation failed: {e}")
            score = 0
 
+       _cleanup_downloaded_audio(state)
 
        #should delete everything in the poses folder and recreate it so that the next time the game is played
        shutil.rmtree("poses", ignore_errors=True)

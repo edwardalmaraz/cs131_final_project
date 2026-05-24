@@ -49,19 +49,23 @@ def render(state):
         window.blit(state["right_label"], (state["right_rect"].x + state["LABEL_PADDING"], state["right_rect"].y + state["LABEL_PADDING"]))
         window.blit(state["bottom_label"], (state["bottom_rect"].x + state["LABEL_PADDING"], state["bottom_rect"].y + state["LABEL_PADDING"]))
 
-        text_surface1 = state["small_font"].render(state["LOADED_SONG"].lyrics[state["current_lyrics_index"] - 1].text, True, state["WHITE"]) 
-        text_surface2 = state["big_font"].render(state["LOADED_SONG"].lyrics[state["current_lyrics_index"]].text, True, state["YELLOW"]) 
+        lyrics = state["LOADED_SONG"].lyrics
+        idx = state["current_lyrics_index"]
 
-        text_rect1 = text_surface1.get_rect(center=(state["bottom_rect"].centerx, state["bottom_rect"].top + 80))
-        text_rect2 = text_surface2.get_rect(center=state["bottom_rect"].center)
+        if lyrics and idx < len(lyrics):
+            if idx > 0:
+                text_surface1 = state["small_font"].render(lyrics[idx - 1].text, True, state["WHITE"])
+                text_rect1 = text_surface1.get_rect(center=(state["bottom_rect"].centerx, state["bottom_rect"].top + 80))
+                window.blit(text_surface1, text_rect1)
 
-        window.blit(text_surface1, text_rect1)
-        window.blit(text_surface2, text_rect2)
+            text_surface2 = state["big_font"].render(lyrics[idx].text, True, state["YELLOW"])
+            text_rect2 = text_surface2.get_rect(center=state["bottom_rect"].center)
+            window.blit(text_surface2, text_rect2)
 
-        if state["current_lyrics_index"] + 1 < len(state["LOADED_SONG"].lyrics):
-            text_surface3 = state["small_font"].render(state["LOADED_SONG"].lyrics[state["current_lyrics_index"] + 1].text, True, state["WHITE"]) 
-            text_rect3 = text_surface3.get_rect(center=(state["bottom_rect"].centerx, state["bottom_rect"].bottom - 80))
-            window.blit(text_surface3, text_rect3)
+            if idx + 1 < len(lyrics):
+                text_surface3 = state["small_font"].render(lyrics[idx + 1].text, True, state["WHITE"])
+                text_rect3 = text_surface3.get_rect(center=(state["bottom_rect"].centerx, state["bottom_rect"].bottom - 80))
+                window.blit(text_surface3, text_rect3)
 
         pose_surface = state.get("pose_surface")
         poses = state.get("poses", [])
@@ -107,7 +111,7 @@ def render(state):
             for i, song in enumerate(songs):
                 color = state["YELLOW"] if i == selected else state["WHITE"]
                 prefix = "> " if i == selected else "  "
-                text = f"{prefix}{song['title']}  —  {song['artist']}"
+                text = f"{prefix}{song['song_title']}  —  {song['artist_name']}"
                 surface = state["library_entry_font"].render(text, True, color)
                 rect = surface.get_rect(center=(state["window_width"] // 2, entry_start_y + i * entry_spacing))
                 window.blit(surface, rect)

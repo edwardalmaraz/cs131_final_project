@@ -42,3 +42,26 @@ def fetch_songs():
     except Exception as e:
         print(f"fetch_songs failed: {e}")
         return []
+
+
+def fetch_song_metadata(song_id):
+    try:
+        r = requests.get(f"{API_BASE_URL}/songs/{song_id}/meta_data", timeout=10)
+        r.raise_for_status()
+        return r.json()
+    except Exception as e:
+        print(f"fetch_song_metadata failed: {e}")
+        return None
+
+
+def fetch_song_audio(song_id, dest_path):
+    try:
+        r = requests.get(f"{API_BASE_URL}/songs/{song_id}/mp3", timeout=60, stream=True)
+        r.raise_for_status()
+        with open(dest_path, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+        return True
+    except Exception as e:
+        print(f"fetch_song_audio failed: {e}")
+        return False

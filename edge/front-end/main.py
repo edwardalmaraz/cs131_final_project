@@ -222,7 +222,6 @@ online_library_text = menu_font.render("2. ONLINE LIBRARY", True, WHITE)
 leaderboard_menu_text = menu_font.render("3. LEADERBOARD", True, WHITE)
 
 
-# end screen
 end_title_font = pygame.font.SysFont(None, 64)
 end_score_font = pygame.font.SysFont(None, 80)
 end_hint_font = pygame.font.SysFont(None, 28)
@@ -335,6 +334,9 @@ state = {
    "music_loaded": music_loaded,
    "pose_surface": None,
    "poses": [],
+   "downloaded_audio_path": None,
+   "active_metadata_path": "songs/metadata.json",
+   "end_title_font": end_title_font,
    "run": True,
 }
 

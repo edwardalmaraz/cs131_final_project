@@ -102,10 +102,6 @@ async def get_song(song_id: str):
         metadata = get_song_metadata(song_id)
     except Exception:
         raise HTTPException(status_code=404, detail=f"Song '{song_id}' not found")
-    try:
-        metadata["lyrics"] = get_song_lyrics_raw(song_id)
-    except Exception:
-        metadata["lyrics"] = None
     return metadata
 
 
