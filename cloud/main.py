@@ -10,8 +10,8 @@ import json
 
 app = FastAPI()
 class song_metadata_update(BaseModel):
-    title: Optional[str] = None
-    artist: Optional[str] = None
+    song_title: Optional[str] = None
+    artist_name: Optional[str] = None
     album: Optional[str] = None
     year: Optional[int] = None
     genre: Optional[str] = None
@@ -76,8 +76,8 @@ async def upload_song_endpoint(
 
     metadata = upload_song(
         song_id=song_id,
-        title=title,
-        artist=artist,
+        song_title=song_title,
+        artist_name=artist_name,
         mp3_bytes=mp3_bytes,
         sequence_order=sequence_order,
         poses=poses_list,
@@ -102,12 +102,13 @@ async def get_song(song_id: str):
         metadata = get_song_metadata(song_id)
     except Exception:
         raise HTTPException(status_code=404, detail=f"Song '{song_id}' not found")
-    try:
-        metadata["lyrics"] = get_song_lyrics_raw(song_id)
-    except Exception:
-        metadata["lyrics"] = None
+    #if lyrics not already in metadata, attempt to fetch and add it before returning
+    if "lyrics" not in metadata:
+        try:
+            metadata["lyrics"] = get_song_lyrics_raw(song_id)
+        except Exception:
+            metadata["lyrics"] = None
     return metadata
-
 
 @app.get("/songs/{song_id}/mp3", summary="Stream Song MP3", tags=["Songs"])
 async def stream_song_mp3(song_id: str):

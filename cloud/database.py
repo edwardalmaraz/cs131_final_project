@@ -40,12 +40,12 @@ def get_song_mp3(song_id: str) -> bytes:
 
 def upload_song(
     song_id: str,
-    title: str,
-    artist: str,
+    song_title: str,
+    artist_name: str,
     mp3_bytes: bytes,
     sequence_order: str,
     poses: list,
-    lyrics: Optional[str] = None,
+    lyrics: Optional[list] = None,
     album: Optional[str] = None,
     year: Optional[int] = None,
     genre: Optional[str] = None,
@@ -53,8 +53,8 @@ def upload_song(
 ) -> dict:
     metadata = {
         "song_id": song_id,
-        "title": title,
-        "artist": artist,
+        "song_title": song_title,
+        "artist_name": artist_name,
         "album": album,
         "year": year,
         "genre": genre,
