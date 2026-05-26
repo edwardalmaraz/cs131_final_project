@@ -9,7 +9,7 @@ apt-get install -y python3-pygame
 echo "pygame installed."
 
 echo "Installing dependencies..."
-apt-get install -y python3-pip python3-dev build-essential portaudio19-dev python3-pyaudio python3-scipy
+apt-get install -y python3-pip python3-dev build-essential portaudio19-dev python3-pyaudio python3-scipy alsa-utils
 python3 -m pip install --isolated --no-cache-dir --index-url https://pypi.org/simple -r "$SCRIPT_DIR/edge/requirements.txt"
 echo "Dependencies installed."
 
