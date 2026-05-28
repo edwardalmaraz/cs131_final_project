@@ -1,8 +1,12 @@
+import os
+import tempfile
+
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from database import *
 from pydantic import BaseModel
 from scoring.text import score_lyrics
+from scoring.pitch import compare_pitch
 from typing import Optional
 import io
 import base64

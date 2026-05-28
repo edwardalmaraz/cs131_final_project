@@ -38,6 +38,11 @@ def get_song_mp3(song_id: str) -> bytes:
     return blob.download_as_bytes()
 
 
+def get_song_wav(song_id: str) -> bytes:
+    blob = song_bucket.blob(f"{song_id}/vocals.wav")
+    return blob.download_as_bytes()
+
+
 def upload_song(
     song_id: str,
     song_title: str,
