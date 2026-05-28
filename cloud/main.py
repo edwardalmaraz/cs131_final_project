@@ -164,8 +164,24 @@ async def submit_round(
     lyric_score = score_lyrics(player_transcript, lyrics)
     save_score(player_id, lyric_score, song_id)
 
-    # TODO: pitch scoring
-    pitch_score = 0.0
+    # pitch scoring
+    try:
+        ref_wav_bytes = get_song_wav(song_id)
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as client_tmp:
+            client_tmp.write(wav_bytes)
+            client_path = client_tmp.name
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as ref_tmp:
+            ref_tmp.write(ref_wav_bytes)
+            ref_path = ref_tmp.name
+        try:
+            pitch_results = compare_pitch(client_path, ref_path)
+            #grabs only the float pitch score from the full results dict
+            pitch_score = pitch_results["score"] 
+        finally:
+            os.unlink(client_path)
+            os.unlink(ref_path)
+    except Exception:
+        pitch_score = 0.0
 
     # TODO: moves scoring
     # move_score is currently passed from the Jetson client, but if not available it should be computed separately.
