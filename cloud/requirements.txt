@@ -2,3 +2,6 @@ fastapi[standard]
 uvicorn
 google-cloud-storage
 librosa
+numpy
+faster-whisper
+numba
