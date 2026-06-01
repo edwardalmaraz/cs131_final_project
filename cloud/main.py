@@ -1,14 +1,24 @@
+import os
+import tempfile
+import numba
+
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from database import *
 from pydantic import BaseModel
 from scoring.text import score_lyrics
+from scoring.pitch import compare_pitch, precompute_ref_pitches
 from typing import Optional
 import io
 import base64
 import json
 
 app = FastAPI()
+
+# In-memory cache of pre-analyzed reference pitch windows, keyed by song_id.
+# Populated on first request or via POST /songs/{song_id}/precompute_pitch.
+_ref_pitch_cache: dict = {}
+
 class song_metadata_update(BaseModel):
     song_title: Optional[str] = None
     artist_name: Optional[str] = None
@@ -132,6 +142,32 @@ async def patch_song_metadata(song_id: str, updates: song_metadata_update):
     return {"status": "updated", "song": metadata}
 
 
+# Pitch precompute (call once per song after upload) 
+@app.post("/songs/{song_id}/precompute_pitch", summary="Pre-analyze reference pitch windows for a song", tags=["Songs"])
+async def precompute_pitch_endpoint(song_id: str):
+    # Fetch the reference WAV from the database; 404 if the song doesn't exist yet.
+    try:
+        ref_wav_bytes = get_song_wav(song_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail=f"WAV for '{song_id}' not found")
+
+    # Write WAV bytes to a temp file so precompute_ref_pitches can read it from disk.
+    # delete=False keeps the file alive after the context manager closes it.
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as ref_tmp:
+        ref_tmp.write(ref_wav_bytes)
+        ref_path = ref_tmp.name
+
+    try:
+        # Analyze the reference audio into fixed-length pitch windows and store in memory.
+        _ref_pitch_cache[song_id] = precompute_ref_pitches(ref_path)
+    finally:
+        # Always remove the temp file, even if precompute_ref_pitches raises.
+        os.unlink(ref_path)
+
+    print(f"[main] precomputed and cached {len(_ref_pitch_cache[song_id])} pitch windows for {song_id}", flush=True)
+    return {"status": "cached", "song_id": song_id, "windows": len(_ref_pitch_cache[song_id])}
+
+
 # --- Scoring ---
 @app.post("/score/lyrics", response_model=lyric_score_response, summary="Score player's lyrics against the original song lyrics", tags=["Scoring"])
 async def compute_score(request: lyric_score_request):
@@ -160,14 +196,52 @@ async def submit_round(
     lyric_score = score_lyrics(player_transcript, lyrics)
     save_score(player_id, lyric_score, song_id)
 
-    # TODO: pitch scoring
-    pitch_score = 0.0
+    # Pitch scoring: compare player's sung audio against the reference song.
+    # Wrapped in a broad try/except so a pitch failure never blocks the final score response.
+    print(f"[main] starting pitch scoring for song_id={song_id}, player_id={player_id}", flush=True)
+    try:
+        # Write the player's WAV to disk; compare_pitch expects a file path
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as client_tmp:
+            client_tmp.write(wav_bytes)
+            client_path = client_tmp.name
+        print(f"[main] client WAV written to {client_path} ({len(wav_bytes)} bytes)", flush=True)
 
-    # TODO: moves scoring
-    # move_score is currently passed from the Jetson client, but if not available it should be computed separately.
+        # Use cached reference pitches if available; otherwise fetch WAV and analyze on the fly.
+        # ref_path is tracked separately so the finally block only unlinks it when we created it here.
+        if song_id in _ref_pitch_cache:
+            print(f"[main] using cached reference pitch windows for {song_id}", flush=True)
+            ref_path = None
+            ref_pitches = _ref_pitch_cache[song_id]
+        else:
+            ref_wav_bytes = get_song_wav(song_id)
+            print(f"[main] fetched reference WAV: {len(ref_wav_bytes)} bytes (no cache — consider calling /songs/{song_id}/precompute_pitch)", flush=True)
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as ref_tmp:
+                ref_tmp.write(ref_wav_bytes)
+                ref_path = ref_tmp.name
+            ref_pitches = precompute_ref_pitches(ref_path)
+            # Populate the cache so future requests for this song skip the fetch.
+            _ref_pitch_cache[song_id] = ref_pitches
+
+        try:
+            pitch_results = compare_pitch(client_path, ref_pitches=ref_pitches)
+            pitch_score = pitch_results["score"]
+            print(f"[main] pitch scoring complete: score={pitch_score}%, windows scored={len(pitch_results['windows'])}", flush=True)
+        finally:
+            # Clean up both temp files regardless of whether compare_pitch succeeded.
+            os.unlink(client_path)
+            if ref_path:
+                os.unlink(ref_path)
+            print(f"[main] cleaned up temp WAV files", flush=True)
+    except Exception as e:
+        # Pitch scoring is best-effort; fall back to 0 so the round can still complete.
+        print(f"[main] pitch scoring failed: {e!r}, defaulting pitch_score=0.0", flush=True)
+        pitch_score = 0.0
+
     move_score = move_score if move_score is not None else 0.0
 
-    final_score = (lyric_score * 0.45) + (pitch_score * 0.10) + (move_score * 0.45)
+    print(f"[main] score breakdown — lyric={lyric_score} (45%), pitch={pitch_score} (10%), move={move_score} (45%)", flush=True)
+    final_score = (lyric_score * 0.10) + (pitch_score * 0.45) + (move_score * 0.45)
+    print(f"[main] final_score={final_score:.2f} for player_id={player_id}", flush=True)
     update_song_leaderboard(song_id, player_id, final_score)
 
     return {

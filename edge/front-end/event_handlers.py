@@ -227,7 +227,7 @@ def update_state(state):
            sequence_order, poses = parse_pose_sequence_data(POSE_COMPARISON_FILE)
            frame_data = parse_frame_data(POSE_OUTPUT_FILE)
            results = compare_sequence_to_frames(sequence_order, poses, frame_data)
-           score = int(total_accuracy(results))
+           score = float(total_accuracy(results))
        except Exception as e:
            print(f"Score calculation failed: {e}")
            score = 0
