@@ -66,7 +66,7 @@ def render(state):
         pose_surface = state.get("pose_surface")
         poses = state.get("poses", [])
         if pose_surface is not None:
-            blit_fit(pose_surface, window, state["left_camera_rect"])
+            blit_fit(pygame.transform.flip(pose_surface, True, False), window, state["left_camera_rect"])
             pose_count = state["status_font"].render(f"poses: {len(poses)}", True, state["WHITE"])
             window.blit(pose_count, (state["left_camera_rect"].x, state["left_camera_rect"].bottom - pose_count.get_height()))
         elif state["pose_camera"].error:
@@ -74,9 +74,31 @@ def render(state):
         else:
             draw_centered_status(window, "Waiting for pose camera...", state["left_camera_rect"], state["status_font"], state["WHITE"])
 
-        window.blit(state["pose_images"][state["current_pose_index"]], state["right_rect"])
+        pose_img = state["pose_images"][state["current_pose_index"]]
+        pose_img_rect = pose_img.get_rect(center=state["right_rect"].center)
+        window.blit(pose_img, pose_img_rect)
 
-        pygame.draw.rect(window, state["BLACK"], state["button_rect"], state["LINE_WIDTH"])
+        # progress bar at bottom of right panel: fills over the duration of the current pose, resets on next pose
+        if state.get("game_state") == "playing":
+            song_time = pygame.time.get_ticks() - state.get("song_start_time", 0)
+            poses = state["LOADED_SONG"].poses
+            current_idx = state["current_pose_index"]
+            current_start = poses[current_idx].timestamp_ms
+            if current_idx + 1 < len(poses):
+                duration = poses[current_idx + 1].timestamp_ms - current_start
+                progress = max(0.0, min(1.0, (song_time - current_start) / duration)) if duration > 0 else 1.0
+            else:
+                progress = 1.0
+            bar_x = state["right_rect"].x
+            bar_y = state["right_rect"].bottom - 14
+            bar_w = state["right_rect"].width
+            bar_h = 10
+            pygame.draw.rect(window, state["WHITE"], (bar_x, bar_y, bar_w, bar_h), 1)
+            fill_w = int(bar_w * progress)
+            if fill_w > 0:
+                pygame.draw.rect(window, state["YELLOW"], (bar_x, bar_y, fill_w, bar_h))
+
+        pygame.draw.rect(window, state["WHITE"], state["button_rect"], state["LINE_WIDTH"])
         window.blit(state["button_text"], (state["button_rect"].x + 15, state["button_rect"].y + 15))
 
     elif state["current_display"] == "name_entry":
@@ -107,7 +129,40 @@ def render(state):
             for i, song in enumerate(songs):
                 color = state["YELLOW"] if i == selected else state["WHITE"]
                 prefix = "> " if i == selected else "  "
-                text = f"{prefix}{song['title']}  —  {song['artist']}"
+                text = f"{prefix}{song['song_title']}  —  {song['artist_name']}"
+                surface = state["library_entry_font"].render(text, True, color)
+                rect = surface.get_rect(center=(state["window_width"] // 2, entry_start_y + i * entry_spacing))
+                window.blit(surface, rect)
+
+        hint = state["library_hint_font"].render("UP/DOWN to navigate   ENTER to select   ESC to go back", True, state["WHITE"])
+        window.blit(hint, hint.get_rect(center=(state["window_width"] // 2, state["window_height"] - 50)))
+
+    elif state["current_display"] == "song_confirmed":
+        msg = state["library_title_font"].render("Song Selected!", True, state["YELLOW"])
+        window.blit(msg, msg.get_rect(center=(state["window_width"] // 2, state["window_height"] // 2 - 50)))
+        song_name = state["label_font"].render(state["LOADED_SONG"].song_title, True, state["WHITE"])
+        window.blit(song_name, song_name.get_rect(center=(state["window_width"] // 2, state["window_height"] // 2 + 10)))
+        hint = state["library_hint_font"].render("Press any key to continue", True, state["WHITE"])
+        window.blit(hint, hint.get_rect(center=(state["window_width"] // 2, state["window_height"] - 60)))
+
+    elif state["current_display"] == "leaderboard_song_select":
+        # song picker shown before the leaderboard so the user can choose which song to view
+        title = state["library_title_font"].render("LEADERBOARD — SELECT SONG", True, state["WHITE"])
+        window.blit(title, title.get_rect(center=(state["window_width"] // 2, 80)))
+
+        songs = state.get("leaderboard_songs", [])
+        selected = state.get("leaderboard_song_select_index", 0)
+
+        if not songs:
+            msg = state["library_entry_font"].render("No songs found on server.", True, state["WHITE"])
+            window.blit(msg, msg.get_rect(center=(state["window_width"] // 2, state["window_height"] // 2)))
+        else:
+            entry_start_y = 180
+            entry_spacing = 55
+            for i, song in enumerate(songs):
+                color = state["YELLOW"] if i == selected else state["WHITE"]
+                prefix = "> " if i == selected else "  "
+                text = f"{prefix}{song['song_title']}  —  {song['artist_name']}"
                 surface = state["library_entry_font"].render(text, True, color)
                 rect = surface.get_rect(center=(state["window_width"] // 2, entry_start_y + i * entry_spacing))
                 window.blit(surface, rect)
@@ -122,11 +177,15 @@ def render(state):
         entry_start_y = 200
         entry_spacing = 60
 
-        for index, entry in enumerate(state["leaderboard_entries"]):
-            entry_string = f"{entry.rank}.  {entry.player_name:<10}  {entry.score}"
-            entry_surface = state["leaderboard_entry_font"].render(entry_string, True, state["WHITE"]) if "leaderboard_entry_font" in state else state["label_font"].render(entry_string, True, state["WHITE"]) 
-            entry_rect = entry_surface.get_rect(center=(state["window_width"] // 2, entry_start_y + index * entry_spacing))
-            window.blit(entry_surface, entry_rect)
+        if not state["leaderboard_entries"]:
+            msg = state["leaderboard_entry_font"].render("No scores yet.", True, state["WHITE"])
+            window.blit(msg, msg.get_rect(center=(state["window_width"] // 2, state["window_height"] // 2)))
+        else:
+            for index, entry in enumerate(state["leaderboard_entries"]):
+                entry_string = f"{entry.rank}.  {entry.player_name:<10}  {entry.score}%"
+                entry_surface = state["leaderboard_entry_font"].render(entry_string, True, state["WHITE"])
+                entry_rect = entry_surface.get_rect(center=(state["window_width"] // 2, entry_start_y + index * entry_spacing))
+                window.blit(entry_surface, entry_rect)
 
         hint_rect = state["leaderboard_hint_text"].get_rect(center=(state["window_width"] // 2, state["window_height"] - 60))
         window.blit(state["leaderboard_hint_text"], hint_rect)
