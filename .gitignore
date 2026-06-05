@@ -14,3 +14,4 @@ edge/front-end/__pycache__
 /edge/front-end/user-audio/*
 /edge/front-end/poses/*
 /edge/front-end/player_poses/pose_locations.txt
+/google-cloud-sdk
