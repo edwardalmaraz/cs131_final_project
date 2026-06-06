@@ -110,7 +110,67 @@ python3 main.py
 
 ### Cloud Setup (GCP)
 
+The cloud backend is a **FastAPI** app (`cloud/main.py`) deployed to **Google Cloud Run**. It uses two **Google Cloud Storage** buckets:
+
+- `cs131_song_bucket` — stores all things song related (`audio.mp3`, `vocals.wav`, `lyrics.txt`, `metadata.json`).
+- `cs131_leaderboard_bucket` — stores leaderboard JSONs for each song.
+
+Both bucket names are hardcoded in `cloud/database.py`. You need to change the names in your own GCP project, just be sure to have two buckets ready for storage.
+
+Run all commands from the `cloud/` directory.
+
+#### 0. Prerequisites
+- A GCP project, ours is `cs131-project-495722`
+- `gcloud` CLI installed and in your PATH
+- Docker installed
+
+#### 1. Authenticate and select your project
 ```bash
-# TODO - ANDY
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+gcloud config set run/region us-west1
 ```
----
+
+#### 2. Enable required APIs
+These are needed to be able to run the needed APIs using GCP
+```bash
+gcloud services enable \
+  run.googleapis.com \
+  cloudbuild.googleapis.com \
+  artifactregistry.googleapis.com \
+  storage.googleapis.com
+```
+
+#### 3. Create the two GCS buckets
+
+Create both buckets from the Cloud Storage Console website under your newly made project:
+
+1. Click **Create**, name the bucket `YOUR_SONG_BUCKET`, set **Location** to `us-west1` (single region), and leave the rest as defaults.
+2. Repeat for `YOUR_LEADERBOARD_BUCKET`.
+3. For each bucket, grant the Cloud Run service account read/write access: open the bucket → **Permissions** → **Grant Access** → add the default compute service account (`PROJECT_NUMBER-compute@developer.gserviceaccount.com`) with the **Storage Object Admin** role.
+
+> GCS bucket names must be globally unique. Be sure the URLS on `cloud/database.py` (lines 8–9) match with the buckets you made on your GCP project page. 
+#### 4. Deploy
+
+Let google Cloud Build build the container:
+```bash
+gcloud run deploy YOUR-PROJECT-NAME\
+  --source . \
+  --region us-west1 \
+  --allow-unauthenticated
+```
+
+#### 5. Verify the deployment
+```bash
+curl https://YOUR_CLOUD_RUN_URL/ping
+# Expected: {"status": "online"}
+
+curl https://YOUR_CLOUD_RUN_URL/songs
+# Expected: {"songs": [...]}
+```
+
+#### 6. Point the edge client at your URL
+Update `edge/front-end/cloud_api.py` (line 3) to your own google cloud project URL.
+```python
+API_BASE_URL = "https://YOUR_CLOUD_RUN_URL"
+```
