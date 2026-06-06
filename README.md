@@ -16,6 +16,7 @@
 **Dance Dance Karaoke** is an open-source dance and karaoke machine that uses the Jetson Nano as the edge device and utilizes GCP as the cloud platform. Our system enables real-time dance and karaoke gameplay, in which users must perform a sequence of poses displayed. In addition, our system plays music and displays lyrics in real time. We then perform pose, lyric, and pitch comparisons during post-processing, returning a total score to the user for each song. Our system is also designed to stay up to date with the most popular songs and dance choreographies. This allows the edge device to select songs from an expanding catalog. Finally, we host a leaderboard that lets users compare their scores with those of other players. Our distributed edge system was tested with two Jetson Nanos; however, its dynamic scalability enables multiple clients to play simultaneously. 
 
 ---
+[DDK-Poster.pdf](https://github.com/user-attachments/files/28656897/DDK.3.pdf)
 
 <img width="898" height="676" alt="Screenshot 2026-06-05 at 4 52 36 PM" src="https://github.com/user-attachments/assets/b36ed05e-d1fb-40d0-af41-387d8df901f9" />
 
