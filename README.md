@@ -1,5 +1,7 @@
 # Dance Dance Karaoke
 > A Low-Cost, Open-Source Edge Platform for Real-Time Karaoke & Dance
+
+> Edge Computing (CS131 Final Project)
 ---
 
 ## Table of Contents
