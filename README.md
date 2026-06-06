@@ -73,7 +73,7 @@ cs131_final_project/
 
 ## Setup & Installation
 
-### Clone the repo (with submodules)
+### Clone the repos (with submodules)
 
 First, clone the `dance dance kareoke` repo 
 
@@ -83,7 +83,7 @@ git clone --recurse-submodules https://github.com/edwardalmaraz/cs131_final_proj
 
 Next, we need to clone Nvidia's `jetson-inference` repo, which contains the necessary Docker image to run the PoseNet model. 
 The entire system will run inside this Docker container. 
-Follow the instructions on 'jetson-inference' to get started with Docker. 
+Follow the instructions on `jetson-inference` to get started with Docker. 
 
 ```bash
 git clone --recurse-submodules https://github.com/dusty-nv/jetson-inference.git
