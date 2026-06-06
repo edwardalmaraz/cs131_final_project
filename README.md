@@ -11,6 +11,7 @@
 - [Software Requirements](#software-requirements)
 - [Repository Structure](#repository-structure)
 - [Setup & Installation](#setup--installation)
+- [Acknowledgements](#Acknowledgements)
 ---
 
 ## Overview
@@ -174,3 +175,6 @@ Update `edge/front-end/cloud_api.py` (line 3) to your own google cloud project U
 ```python
 API_BASE_URL = "https://YOUR_CLOUD_RUN_URL"
 ```
+
+# Acknowledgements
+For this project, there were components where AI was used, as we are not Python experts. For example, we were not familiar with Pygame, which was used to build our user interface, so we utilized AI assistance for that component. With that being said, the overall idea for the project, as well as how the system was designed to operate and how the various computations were performed, were our own original ideas. For example, our pose calculation method based on angle differences was mathematically theorized and designed beforehand. AI was primarily used to assist with translating those mathematical concepts and algorithms into Python code and resolving specific syntax issues.
